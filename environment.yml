@@ -1,0 +1,15 @@
+name: ppde
+channels:
+  - defaults
+dependencies:
+  - python=3.8
+  - torchvision
+  - cudatoolkit
+  - pytorch
+  - biopython
+  - pandas
+  - scikit-learn
+  - matplotlib
+  - tqdm
+  - libgcc
+  - cma
