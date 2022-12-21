@@ -150,7 +150,6 @@ if __name__ == '__main__':
     diffusion_args.add_argument('--diffusion_relaxation_tau', type=float, default=0.99)
 
     pppo_args = parser.add_argument_group('ppde')
-    pppo_args.add_argument('--ppde_gwg_samples', type=int, default=1)
     pppo_args.add_argument('--ppde_pas_length', type=int, default=1)
 
     cmaes_args = parser.add_argument_group('cmaes')
