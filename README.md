@@ -33,6 +33,7 @@ pip install -e .
 
 ## Cite the work
 
+```
 @article{emami2022plug,
  author = {Emami, Patrick and Perreault, Aidan and Law, Jeffrey and Biagioni, David and St John, Peter C.},
  journal = {ArXiv preprint},
@@ -41,3 +42,4 @@ pip install -e .
  volume = {abs/2212.09925},
  year = {2022}
 }
+```
