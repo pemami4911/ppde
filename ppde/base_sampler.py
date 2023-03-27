@@ -1,6 +1,6 @@
-class BaseSampler:
-    """
-    Basic skeleton for samplers
+
+class BaseSampler(AbstractBaseClass):
+    """Base class for samplers
     """
     def run(self, initial_population, num_steps, energy_function, min_pos, max_pos, oracle):
         """

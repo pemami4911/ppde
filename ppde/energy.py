@@ -9,6 +9,7 @@ from src.nets import Transformer
 from src.third_party.grathwohl import mlp
 from src.third_party.hsu import io_utils, data_utils
     
+    
 class MNISTJointEnergy(torch.nn.Module):
     def __init__(self, ebm_init_mean, args):
         super().__init__()

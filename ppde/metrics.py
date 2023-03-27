@@ -10,12 +10,14 @@ from src.third_party.hsu import data_utils
 from esm_one_hot import pretrained
 from tqdm import trange
 
+
 def proteins_potts_score(population, dataset_name):
     """ delta hamiltonian """
     potts = PottsModel(dataset_name).to(population.device)
     potts.eval()
     with torch.no_grad():
         return potts(potts.preprocess_onehot(population), delta=True)
+
 
 def proteins_transformer_score(population, dataset_name, msa_location, msa_size):
     potts = PottsModel(dataset_name).to(population.device)
