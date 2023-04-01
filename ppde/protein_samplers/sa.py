@@ -80,6 +80,7 @@ class SimulatedAnnealing(BaseSampler):
             gt_score_quantiles = np.quantile(gt_fitness.cpu().numpy(), [0.5, 0.9])
             energy_quantiles = np.quantile(state_energy.cpu().numpy(), [0.5,0.9])
 
+            # TODO: Add debug level
             print(f'[Iteration 0] energy: 50% {energy_quantiles[0]:.3f}, 90% {energy_quantiles[1]:.3f}')
             print(f'[Iteration 0] pred fitness 50% {fitness_quantiles[0]:.3f}, 90% {fitness_quantiles[1]:.3f}')
             print(f'[Iteration 0] oracle fitness 50% {gt_score_quantiles[0]:.3f}, 90% {gt_score_quantiles[1]:.3f}')

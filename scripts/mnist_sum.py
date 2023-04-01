@@ -99,23 +99,23 @@ def main(args):
 
     ###### create the initial population #########
     if args.wild_type == 0:
-        summand_a = torch.from_numpy(np.load('./experiments/mnist/3_0.npy')).float()
-        summand_b = torch.from_numpy(np.load('./experiments/mnist/3_1.npy')).float()
+        summand_a = torch.from_numpy(np.load('./data/mnist/3_0.npy')).float()
+        summand_b = torch.from_numpy(np.load('./data/mnist/3_1.npy')).float()
     elif args.wild_type == 1:
-        summand_a = torch.from_numpy(np.load('./experiments/mnist/29_0.npy')).float()
-        summand_b = torch.from_numpy(np.load('./experiments/mnist/29_1.npy')).float()
+        summand_a = torch.from_numpy(np.load('./data/mnist/29_0.npy')).float()
+        summand_b = torch.from_numpy(np.load('./data/mnist/29_1.npy')).float()
     elif args.wild_type == 2:
-        summand_a = torch.from_numpy(np.load('./experiments/mnist/38_0.npy')).float()
-        summand_b = torch.from_numpy(np.load('./experiments/mnist/38_1.npy')).float()
+        summand_a = torch.from_numpy(np.load('./data/mnist/38_0.npy')).float()
+        summand_b = torch.from_numpy(np.load('./data/mnist/38_1.npy')).float()
     elif args.wild_type == 3:
-        summand_a = torch.from_numpy(np.load('./experiments/mnist/99_0.npy')).float()
-        summand_b = torch.from_numpy(np.load('./experiments/mnist/99_1.npy')).float()
+        summand_a = torch.from_numpy(np.load('./data/mnist/99_0.npy')).float()
+        summand_b = torch.from_numpy(np.load('./data/mnist/99_1.npy')).float()
     elif args.wild_type == 4:
-        summand_a = torch.from_numpy(np.load('./experiments/mnist/149_0.npy')).float()
-        summand_b = torch.from_numpy(np.load('./experiments/mnist/149_1.npy')).float()
+        summand_a = torch.from_numpy(np.load('./data/mnist/149_0.npy')).float()
+        summand_b = torch.from_numpy(np.load('./data/mnist/149_1.npy')).float()
     elif args.wild_type == -1:
-        summand_a = torch.from_numpy(np.load('./experiments/mnist/hyperparameters_0.npy')).float()
-        summand_b = torch.from_numpy(np.load('./experiments/mnist/hyperparameters_1.npy')).float()
+        summand_a = torch.from_numpy(np.load('./data/mnist/validation_0.npy')).float()
+        summand_b = torch.from_numpy(np.load('./data/mnist/validation_1.npy')).float()
 
     summand_a = summand_a.view(784)
     summand_b = summand_b.view(784)
@@ -157,7 +157,7 @@ if __name__ == '__main__':
     general_args.add_argument('--dae_path', type=str, default='weights/mnist_models/mnist_binary_dae.pt')
     general_args.add_argument('--ebm_path', type=str, default='weights/mnist_models/mnist_ebm.pt')
     general_args.add_argument('--one_hot_ensemble_path', type=str, default='weights/mnist_models')
-    general_args.add_argument('--results_path', type=str, default='./experiments/mnist/results')
+    general_args.add_argument('--results_path', type=str, default='./results/mnist')
     general_args.add_argument('--wild_type', type=int, default=0, help='which mnist pair to use [0, 4]')
     general_args.add_argument('--seed', type=int, default=1234567)
     general_args.add_argument('--device', type=str, default='cuda')

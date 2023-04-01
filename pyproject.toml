@@ -10,7 +10,6 @@ readme = "README.md"
 python = "^3.9"
 pytorch = "^1.0.2"
 biopython = "^1.81"
-pandas = "scikit-learn"
 sklearn = "^0.0.post1"
 cma = "^3.3.0"
 

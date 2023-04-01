@@ -75,24 +75,24 @@ def proteins_transformer_score(population, dataset_name, msa_location, msa_size)
         print(mut_sum)
     return np.array(scores)
 
-def proteins_homology_score(population, msa_location):
-    import pyhmmer 
-    alphabet = pyhmmer.easel.Alphabet.amino()
-    with pyhmmer.easel.MSAFile(msa_location, digital=False) as msa_file:
-        msa = next(msa_file)
+# def proteins_homology_score(population, msa_location):
+#     import pyhmmer 
+#     alphabet = pyhmmer.easel.Alphabet.amino()
+#     with pyhmmer.easel.MSAFile(msa_location, digital=False) as msa_file:
+#         msa = next(msa_file)
 
-    msa_d = msa.digitize(alphabet)
-    msa_d.name = b'placeholder'
-    builder = pyhmmer.plan7.Builder(alphabet)
-    background = pyhmmer.plan7.Background(alphabet)
-    hmm, _, _ = builder.build_msa(msa_d, background)
+#     msa_d = msa.digitize(alphabet)
+#     msa_d.name = b'placeholder'
+#     builder = pyhmmer.plan7.Builder(alphabet)
+#     background = pyhmmer.plan7.Background(alphabet)
+#     hmm, _, _ = builder.build_msa(msa_d, background)
 
-    population = data_utils.onehot2seq(population.cpu().numpy())
-    population = [ pyhmmer.easel.TextSequence(sequence=p).digitize(alphabet) for p in population ]
+#     population = data_utils.onehot2seq(population.cpu().numpy())
+#     population = [ pyhmmer.easel.TextSequence(sequence=p).digitize(alphabet) for p in population ]
 
-    pipeline = pyhmmer.plan7.Pipeline(alphabet, background=background)
-    hits = pipeline.search_hmm(query=hmm, sequences=population)
-    return hits
+#     pipeline = pyhmmer.plan7.Pipeline(alphabet, background=background)
+#     hits = pipeline.search_hmm(query=hmm, sequences=population)
+#     return hits
 
 def n_hops(population, wt):
     K, L, V = population.shape

@@ -103,8 +103,9 @@ def load_MSA(filename):
         msa += [(seq_name, ''.join([letter for letter in sequence]))]
     return msa
 
-if __name__ == '__main__':
+# TODO: Delete
+# if __name__ == '__main__':
 
-    msa = load_MSA('/gpfs/alpine/bie108/proj-shared/pppo/alignments/PABP_YEAST.a2m')
-    print(len(msa[0][1]))
-    print(len(msa[10][1]))
+#     msa = load_MSA('/gpfs/alpine/bie108/proj-shared/pppo/alignments/PABP_YEAST.a2m')
+#     print(len(msa[0][1]))
+#     print(len(msa[10][1]))
