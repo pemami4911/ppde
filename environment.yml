@@ -1,4 +1,4 @@
-name: ppde-test
+name: ppde
 channels:
   - pytorch
   - conda-forge
