@@ -1,4 +1,4 @@
-from types import SimpleNamespace as SN
+#from types import SimpleNamespace as SN
 import torch
 import torchvision
 import argparse
@@ -7,15 +7,16 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import random 
-from moviepy.editor import ImageSequenceClip 
+#from moviepy.editor import ImageSequenceClip 
+from pathlib import Path 
 
-from src.energy import MNISTEnergy, MNISTJointEnergy, MNISTLatentSurrogate, TestMNISTEnergy
-from src.mnist_samplers.sa import SimulatedAnnealing
-from src.nets import MNISTRegressionNet
-from src.mnist_samplers.mala_approx import MALAApprox
-from src.mnist_samplers.cmaes import CMAES
-from src.mnist_samplers.ppde import PPDE
-from src.metrics import mnist_scores_to_csv, mnist_performance_plots
+from ppde.energy import MNISTEnergy, MNISTJointEnergy, MNISTLatentSurrogate, TestMNISTEnergy
+from ppde.mnist_samplers.sa import SimulatedAnnealing
+from ppde.nets import MNISTRegressionNet
+from ppde.mnist_samplers.mala_approx import MALAApprox
+from ppde.mnist_samplers.cmaes import CMAES
+from ppde.mnist_samplers.ppde import PPDE
+from ppde.metrics import mnist_scores_to_csv, mnist_performance_plots
 
 
 def get_sampler(args):
@@ -55,21 +56,7 @@ def visualize_population(population, method, args):
     
     np.save(args.results_path + '/' + method + '_final_population.npy', population.view(-1,28,28).numpy())
 
-def score_diversity(population, autoencoder):
-    """
-    population is [K, 1, 28, 28]
-    """
-    with torch.no_grad():
-        # encode --> [K,D]
-        K = population.size(0)
-        population = population.view(K,-1)
-        embeddings = autoencoder.encode(population).mean
-        D = embeddings.size(1)
-        distance = torch.norm( embeddings.view(K,1,D) - embeddings.view(1,K,D), 2, 2)  # [K,K]
-        avg_distance = torch.sum(distance) / (K**2 - K)
-        return avg_distance
-    # compute average Euclidean distance between i and all pairs j
-    
+
 def main(args):
     """
     Run sampler
@@ -80,9 +67,13 @@ def main(args):
     torch.backends.cudnn.deterministic=True
     torch.backends.cudnn.benchmark=False
 
+    # Create results directory
+    Path(args.results_path).mkdir(parents=True, exist_ok=True)
+    args.mnist_weights = Path(args.mnist_weights)
+
     # Load energy function models
     if args.energy_function == 'joint':
-        init_mean = torch.from_numpy(np.load('./experiments/mnist/mnist_mean.npy')).float()
+        init_mean = torch.from_numpy(np.load('./data/mnist/mnist_mean.npy')).float()
         energy_func = MNISTJointEnergy(init_mean, args)
     elif args.energy_function == 'fitness':
         energy_func = MNISTEnergy(args)
@@ -94,7 +85,9 @@ def main(args):
 
     # Load oracle
     oracle = MNISTRegressionNet(64)
-    oracle.load_state_dict(torch.load(args.oracle_path)['model'])
+    oracle.load_state_dict(torch.load(
+        args.mnist_weights / 'one-hot_GT_ckpt_60000.pt',
+        map_location=torch.device(args.device))['model'])
     oracle.to(args.device)
 
     ###### create the initial population #########
@@ -133,7 +126,7 @@ def main(args):
         abbrv += f'_{args.suffix}'
     
     final_pop, energy_history, sum_history, oracle_history, random_traj = \
-        sampler.run(init_seqs, args.n_iters, energy_func, oracle, None, args.log_every)
+        sampler.run(init_seqs, args.n_iters, energy_func, 0, 784, oracle, args.log_every)
     
     metrics = args.metrics.split('+')
     if 'plots' in metrics:
@@ -152,12 +145,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     # general
     general_args = parser.add_argument_group('general')
-    general_args.add_argument('--data_dir', type=str, default='/gpfs/alpine/bie108/proj-shared/pppo')
-    general_args.add_argument('--oracle_path', type=str, default='weights/mnist_models/one-hot_GT_ckpt_60000.pt')
-    general_args.add_argument('--dae_path', type=str, default='weights/mnist_models/mnist_binary_dae.pt')
-    general_args.add_argument('--ebm_path', type=str, default='weights/mnist_models/mnist_ebm.pt')
-    general_args.add_argument('--one_hot_ensemble_path', type=str, default='weights/mnist_models')
-    general_args.add_argument('--results_path', type=str, default='./results/mnist')
+    general_args.add_argument('--mnist_weights', type=str, default='weights/mnist_models')
+    general_args.add_argument('--results_path', type=str, default='results/mnist')
     general_args.add_argument('--wild_type', type=int, default=0, help='which mnist pair to use [0, 4]')
     general_args.add_argument('--seed', type=int, default=1234567)
     general_args.add_argument('--device', type=str, default='cuda')

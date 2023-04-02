@@ -1,9 +1,9 @@
 import torch
 import matplotlib.pyplot as plt
 import numpy as np
-from src.base_sampler import BaseSampler
-from src.third_party.hsu import data_utils
-from src.metrics import n_hops
+from ppde.base_sampler import BaseSampler
+from ppde.third_party.hsu import data_utils
+from ppde.metrics import n_hops
 
 class MALAApprox(BaseSampler):
     """

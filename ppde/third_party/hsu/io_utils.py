@@ -7,7 +7,7 @@ import filelock
 import numpy as np
 import pandas as pd
 
-from src.third_party.hsu.data_utils import is_valid_seq, seqs_to_onehot
+from ppde.third_party.hsu.data_utils import is_valid_seq, seqs_to_onehot
 
 
 def merge_dfs(in_rgx, out_path, index_cols, groupby_cols, ignore_cols):

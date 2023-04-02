@@ -1,11 +1,8 @@
 
 import cma
-from typing import Optional, Tuple
-from typing import List, Union
 import numpy as np
-import pandas as pd
 import torch
-from src.base_sampler import BaseSampler
+from ppde.base_sampler import BaseSampler
 
 
 class CMAES(BaseSampler):
@@ -17,20 +14,6 @@ class CMAES(BaseSampler):
     sequences for the objective function.
     http://blog.otoro.net/2017/10/29/visual-evolution-strategies/ is a helpful guide.
     """
-
-    # def __init__(
-    #     self,
-    #     model: flexs.Model,
-    #     rounds: int,
-    #     sequences_batch_size: int,
-    #     model_queries_per_batch: int,
-    #     starting_sequence: str,
-    #     alphabet: str,
-    #     population_size: int = 15,
-    #     max_iter: int = 400,
-    #     initial_variance: float = 0.2,
-    #     log_file: Optional[str] = None,
-    # ):
     def __init__(self, args):
         """
         Args:
@@ -38,16 +21,6 @@ class CMAES(BaseSampler):
             max_iter: Maximum number of iterations.
             initial_variance: Initial variance passed into cma.
         """
-        # super().__init__(
-        #     model,
-        #     name,
-        #     rounds,
-        #     sequences_batch_size,
-        #     model_queries_per_batch,
-        #     starting_sequence,
-        #     log_file,
-        # )
-
         self.alphabet = "01"
         self.population_size = args.cmaes_population_size
         self.sequences_batch_size = args.n_chains
@@ -67,7 +40,7 @@ class CMAES(BaseSampler):
         
         #sequences = {top_seq: top_val}
         state_energy, fitness = model.get_energy(x2, x1=x1)
-        print(f'initial energy = {state_energy}')
+        print(f'initial energy = {torch.mean(state_energy)}')
         # convert x1,x2 to numpy arrays
         x1_single = x1[0].unsqueeze(0)
         fitness_history = [fitness]
@@ -144,7 +117,7 @@ class CMAES(BaseSampler):
         return new_seqs, np.stack(energy_history, 0), \
                 torch.stack(fitness_history, 0).cpu().numpy(), torch.stack(gt_fitness,0).cpu().numpy(), None
 
-    def run(self, initial_population, num_steps, energy_function, oracle, logger, log_every=50):
+    def run(self, initial_population, num_steps, energy_function, min_pos=0, max_pos=784, oracle=None, log_every=50):
         with torch.no_grad():
             seq_len = initial_population.size(1) // 2
             x1 = initial_population[:,:seq_len]

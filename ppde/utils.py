@@ -103,9 +103,9 @@ def load_MSA(filename):
         msa += [(seq_name, ''.join([letter for letter in sequence]))]
     return msa
 
-# TODO: Delete
-# if __name__ == '__main__':
-
-#     msa = load_MSA('/gpfs/alpine/bie108/proj-shared/pppo/alignments/PABP_YEAST.a2m')
-#     print(len(msa[0][1]))
-#     print(len(msa[10][1]))
+def safe_logits_to_probs(logits):
+    """safe convert logits to probs"""
+    logits = logits - torch.logsumexp(logits, dim=-1, keepdim=True)
+    probs = torch.softmax(logits, dim=-1)
+    probs = torch.distributions.utils.clamp_probs(probs)
+    return probs

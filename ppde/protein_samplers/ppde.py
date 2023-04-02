@@ -2,9 +2,9 @@ import torch
 import torch.nn as nn
 import matplotlib.pyplot as plt
 import numpy as np
-from src.base_sampler import BaseSampler
+from ppde.base_sampler import BaseSampler
 import time
-from src.utils import mut_distance, mutation_mask
+from ppde.utils import mut_distance, mutation_mask
 
 
 class PPDE_PAS(BaseSampler):

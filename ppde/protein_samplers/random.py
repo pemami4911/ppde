@@ -2,9 +2,9 @@ import torch
 import copy 
 import numpy as np
 import random
-from src.base_sampler import BaseSampler
-from src.third_party.hsu import data_utils
-from src.metrics import n_hops
+from ppde.base_sampler import BaseSampler
+from ppde.third_party.hsu import data_utils
+from ppde.metrics import n_hops
 
 class RandomSampler(BaseSampler):
     def __init__(self, args):

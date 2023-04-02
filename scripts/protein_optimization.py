@@ -7,15 +7,15 @@ import os
 import datetime
 import json 
 
-from src.energy import ProteinJointEnergy, ProteinEnergy
-from src.nets import AugmentedLinearRegression
-from src.protein_samplers.ppde import PPDE_PAS
-from src.protein_samplers.sa import SimulatedAnnealing
-from src.protein_samplers.mala_approx import MALAApprox
-from src.protein_samplers.cmaes import CMAES
-from src.protein_samplers.random import RandomSampler
-from src.third_party.hsu import io_utils, data_utils
-from src.metrics import proteins_potts_score, proteins_transformer_score
+from ppde.energy import ProteinJointEnergy, ProteinEnergy
+from ppde.nets import AugmentedLinearRegression
+from ppde.protein_samplers.ppde import PPDE_PAS
+from ppde.protein_samplers.sa import SimulatedAnnealing
+from ppde.protein_samplers.mala_approx import MALAApprox
+from ppde.protein_samplers.cmaes import CMAES
+from ppde.protein_samplers.random import RandomSampler
+from ppde.third_party.hsu import io_utils, data_utils
+from ppde.metrics import proteins_potts_score, proteins_transformer_score
 
 def get_sampler(args):
     if args.sampler == 'simulated_annealing':

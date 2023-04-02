@@ -3,15 +3,18 @@ import torch
 from torch import nn
 import torch.nn.functional as F
 import math
-from src.third_party.grathwohl.mlp import Swish
-from src.third_party.grathwohl.mlp import BasicBlock
-from src.third_party.hsu import io_utils, data_utils
+from ppde.third_party.grathwohl.mlp import Swish
+from ppde.third_party.grathwohl.mlp import BasicBlock
+from ppde.third_party.hsu import io_utils, data_utils
 import pickle as pkl
 
 from esm_one_hot import pretrained
 
 
 class MNISTRegressionNet(nn.Module):
+    """A simple Siamese regression network for predicting 
+    the sum of two MNIST digits.
+    """
     def __init__(self, nc=16):
         super().__init__()
         self.net = nn.Sequential(
@@ -78,7 +81,8 @@ class DAE(nn.Module):
 
 
         # Build Decoder        
-        proj = [nn.Linear(latent_dim, n_channels * (28 //4)**2), nn.Unflatten(-1, (n_channels, 28//4, 28//4))]
+        proj = [nn.Linear(latent_dim, n_channels * (28 //4)**2),
+                           nn.Unflatten(-1, (n_channels, 28//4, 28//4))]
         upsample = [
             BasicBlock(n_channels, n_channels, -2, norm=True),
             BasicBlock(n_channels, n_channels, -2, norm=True)
@@ -395,12 +399,12 @@ class EnsembleMNIST:
     an API for getting predictions.
     """
     def __init__(self, weights_list, ensemble_class, device='cuda'):
-        
         self.surrogates = []
         for i in range(len(weights_list)):
             self.surrogates += [ensemble_class()]
             self.surrogates[-1] = self.surrogates[-1].to(device)
-            self.surrogates[-1].load_state_dict(torch.load(weights_list[i])['model'])
+            self.surrogates[-1].load_state_dict(torch.load(weights_list[i],
+                                                map_location=torch.device(device))['model'])
             print(f'loaded {weights_list[i]}')
         
     

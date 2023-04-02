@@ -2,7 +2,7 @@ import torch
 import copy 
 import numpy as np
 import random
-from src.base_sampler import BaseSampler
+from ppde.base_sampler import BaseSampler
 
 
 class SimulatedAnnealing(BaseSampler):
@@ -45,7 +45,7 @@ class SimulatedAnnealing(BaseSampler):
         return mseqs
 
 
-    def run(self, initial_population, num_steps, energy_function, oracle, logger, log_every=50):
+    def run(self, initial_population, num_steps, energy_function, min_pos=0, max_pos=784, oracle=None, log_every=50):
 
         with torch.no_grad():
             seq_len = initial_population.size(1) // 2

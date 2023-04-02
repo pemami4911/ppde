@@ -1,7 +1,7 @@
 import torch
 import matplotlib.pyplot as plt
 import numpy as np
-from src.base_sampler import BaseSampler
+from ppde.base_sampler import BaseSampler
 
 
 class MALAApprox(BaseSampler):
@@ -14,7 +14,7 @@ class MALAApprox(BaseSampler):
         x_soft = x_relaxed_discrete.rsample()
         return (x_soft + torch.round(x_soft)) - x_soft
 
-    def run(self, initial_population, num_steps, energy_function, oracle, logger, log_every=50):
+    def run(self, initial_population, num_steps, energy_function, min_pos=0, max_pos=784, oracle=None, log_every=50):
     
         seq_len = initial_population.size(1) // 2
         x1 = initial_population[:,:seq_len].detach()

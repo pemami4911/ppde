@@ -2,11 +2,17 @@ import torch
 import torch.nn as nn
 import matplotlib.pyplot as plt
 import numpy as np
-from src.base_sampler import BaseSampler
 import time
+from ppde.base_sampler import BaseSampler
+import ppde.utils as utils
 
 
 class PPDE(BaseSampler):
+    """
+    If we pass logits to OneHotCategorical, occasionally PyTorch throws an error when it converts
+    logits to probs, likely due to numerical instability. So we need to convert
+    logits to probs ourselves, check that they are valid, and then pass them.
+    """
     def __init__(self, args):
         super().__init__()
         self.ppde_temp = 2  # optimal for locally balanced function g(t) = \sqrt(t)
@@ -20,7 +26,7 @@ class PPDE(BaseSampler):
     def approximate_energy_change(self, wx, grad_x):
         return grad_x * wx.detach() / self.ppde_temp
     
-    def run(self, initial_population, num_steps, energy_function, oracle, logger, log_every=50):
+    def run(self, initial_population, num_steps, energy_function, min_pos=0, max_pos=784, oracle=None, log_every=50):
         """
         initial population is of shape [population_size, 2*sequence_length, vocab_size]
         """
@@ -91,8 +97,9 @@ class PPDE(BaseSampler):
                 for step in range(1,max_u):                
                     delta = self.delta(x2_proposal)
                     Delta += [delta]
-                    approx_forward_energy_change = self.approximate_energy_change(delta, grad_x)
-                    pas_prob = torch.distributions.one_hot_categorical.OneHotCategorical(logits=approx_forward_energy_change)
+                    approx_forward_energy_change = self.approximate_energy_change(delta, grad_x)                    
+                    pas_prob = torch.distributions.one_hot_categorical.OneHotCategorical(
+                        probs=utils.safe_logits_to_probs(approx_forward_energy_change))
                     forward_categoricals += [pas_prob]
                     changes_all = pas_prob.sample((1,))
                     changes = (changes_all.sum(0) > 0.).float()
@@ -111,7 +118,8 @@ class PPDE(BaseSampler):
                 approx_reverse_energy_changes = self.approximate_energy_change(torch.stack(Delta[1:], dim=0), reverse_grad_x)
                 log_ratio = 0
                 for id in range(len(Idx)):
-                    cd_reverse = torch.distributions.one_hot_categorical.OneHotCategorical(logits=approx_reverse_energy_changes[id])
+                    cd_reverse = torch.distributions.one_hot_categorical.OneHotCategorical(
+                        probs=utils.safe_logits_to_probs(approx_reverse_energy_changes[id]))
                     log_ratio += u_mask[:,id] * (cd_reverse.log_prob(Idx[id]) - forward_categoricals[id].log_prob(Idx[id]))
                 
             else:
@@ -122,7 +130,8 @@ class PPDE(BaseSampler):
                 reverse_grad_x = torch.autograd.grad([proposal_energy.sum()], x2_proposal)[0]
                 reverse_delta = self.delta(x2_proposal)
                 approximate_reverse_energy_change = self.approximate_energy_change(reverse_delta, reverse_grad_x)
-                cd_reverse = torch.distributions.one_hot_categorical.OneHotCategorical(logits=approximate_reverse_energy_change)
+                cd_reverse = torch.distributions.one_hot_categorical.OneHotCategorical(
+                    probs=utils.safe_logits_to_probs(approximate_reverse_energy_change))
                 lp_forward = cd_forward.log_prob(Idx[0]).sum(0)                                    
                 lp_reverse = cd_reverse.log_prob(Idx[0]).sum(0)
                 log_ratio = lp_reverse - lp_forward

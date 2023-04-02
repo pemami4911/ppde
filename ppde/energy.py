@@ -2,20 +2,19 @@ import os
 from os import path
 import torch
 import numpy as np
-from src.nets import EnsembleMNIST, MNISTRegressionNet, MNISTLatentMLP, OnehotCNN, PottsTransformer
-from src.nets import PottsModel, EnsembleProtein
-from src.nets import DAE
-from src.nets import Transformer
-from src.third_party.grathwohl import mlp
-from src.third_party.hsu import io_utils, data_utils
+from ppde.nets import EnsembleMNIST, MNISTRegressionNet, MNISTLatentMLP, OnehotCNN, PottsTransformer
+from ppde.nets import PottsModel, EnsembleProtein
+from ppde.nets import DAE
+from ppde.nets import Transformer
+from ppde.third_party.grathwohl import mlp
+from ppde.third_party.hsu import io_utils, data_utils
     
     
 class MNISTJointEnergy(torch.nn.Module):
     def __init__(self, ebm_init_mean, args):
         super().__init__()
         self.lamda = args.energy_lamda
-
-        self.fitness = EnsembleMNIST([path.join(args.data_dir,args.one_hot_ensemble_path,f'ensemble_{i}_ckpt_25000.pt') for i in range(3)],
+        self.fitness = EnsembleMNIST([args.mnist_weights / f'ensemble_{i}_ckpt_25000.pt' for i in range(3)],
                                       lambda x=16: MNISTRegressionNet(x), args.device )
         self.fitness.eval()
         self.prior_type = args.prior
@@ -25,12 +24,16 @@ class MNISTJointEnergy(torch.nn.Module):
             ebm_init_mean = ebm_init_mean * (1. - 2 * eps) + eps
             net = mlp.ResNetEBM()
             self.prior = mlp.EBM(net, ebm_init_mean)
-            self.prior.load_state_dict(torch.load(path.join(args.data_dir, args.ebm_path))['model'])
+            self.prior.load_state_dict(torch.load(
+                args.mnist_weights / 'mnist_ebm.pt',
+                map_location=torch.device(args.device))['model'])
             self.prior.eval()
         elif args.prior == 'dae':
             self.prior = DAE(latent_dim=16, n_channels=64, max_p=15)
             self.prior.to(args.device)
-            self.prior.load_state_dict(torch.load(path.join(args.data_dir, args.dae_path))['model'])
+            self.prior.load_state_dict(torch.load(
+                 args.mnist_weights / 'mnist_binary_dae.pt', 
+                 map_location=torch.device(args.device))['model'])
             self.prior.eval()
 
 
@@ -51,7 +54,7 @@ class MNISTJointEnergy(torch.nn.Module):
 class MNISTEnergy(torch.nn.Module):
     def __init__(self, args):
         super().__init__()
-        self.fitness = EnsembleMNIST([path.join(args.data_dir,args.one_hot_ensemble_path,f'ensemble_{i}_ckpt_25000.pt') for i in range(3)],
+        self.fitness = EnsembleMNIST([args.mnist_weights / f'ensemble_{i}_ckpt_25000.pt' for i in range(3)],
                                       lambda x=16: MNISTRegressionNet(x), args.device )
         self.fitness.eval()
 
@@ -68,7 +71,7 @@ class MNISTEnergy(torch.nn.Module):
 class TestMNISTEnergy(torch.nn.Module):
     def __init__(self, args):
         super().__init__()
-        self.fitness = EnsembleMNIST([path.join(args.data_dir,args.one_hot_ensemble_path,f'ensemble_{i}_ckpt_25000.pt') for i in range(3)],
+        self.fitness = EnsembleMNIST([args.mnist_weights / f'ensemble_{i}_ckpt_25000.pt' for i in range(3)],
                                       lambda x=16: MNISTRegressionNet(x), args.device )
         self.fitness.eval()
 
@@ -83,7 +86,7 @@ class TestMNISTEnergy(torch.nn.Module):
 class MNISTLatentSurrogate(torch.nn.Module):
     def __init__(self, args):
         super().__init__()
-        self.fitness = EnsembleMNIST([path.join(args.data_dir, args.one_hot_ensemble_path, f'latent_ensemble_{i}_ckpt_40000.pt') for i in range(3)],
+        self.fitness = EnsembleMNIST([args.mnist_weights / f'latent_ensemble_{i}_ckpt_40000.pt' for i in range(3)],
                                       lambda x=16,y=128: MNISTLatentMLP(x,y), args.device )
         self.fitness.eval()
 
@@ -98,11 +101,12 @@ class MNISTLatentSurrogate(torch.nn.Module):
 
 
 class ProteinJointEnergy(torch.nn.Module):
+    # TODO: Fix paths
     def __init__(self, args):
         super().__init__()
         self.lamda = args.energy_lamda
         self.prior_type = args.prior
-        dataset = path.join(args.data_dir, 'weights', args.dataset_name)
+        dataset = path.join(args.data_dir, args.dataset_name)
         self.minibatch_size = 1 if args.prior == 'transformer-L' else min(args.n_chains,16)
 
         if args.prior == 'potts':

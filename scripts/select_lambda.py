@@ -4,8 +4,8 @@
 import argparse
 import os
 import pandas as pd
-from src.energy import ProteinJointEnergy, ProteinEnergy
-import src.third_party.hsu.data_utils as data_utils
+from ppde.energy import ProteinJointEnergy, ProteinEnergy
+import ppde.third_party.hsu.data_utils as data_utils
 import torch
 
 if __name__ == '__main__':

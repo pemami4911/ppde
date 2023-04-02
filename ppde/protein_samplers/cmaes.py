@@ -5,8 +5,8 @@ from typing import List, Union
 import numpy as np
 import pandas as pd
 import torch
-from src.base_sampler import BaseSampler
-from src.third_party.hsu import data_utils
+from ppde.base_sampler import BaseSampler
+from ppde.third_party.hsu import data_utils
 
 
 class CMAES(BaseSampler):

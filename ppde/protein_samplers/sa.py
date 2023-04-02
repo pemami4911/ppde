@@ -2,9 +2,9 @@ import torch
 import copy 
 import numpy as np
 import random
-from src.base_sampler import BaseSampler
-from src.third_party.hsu import data_utils
-from src.utils import mut_distance
+from ppde.base_sampler import BaseSampler
+from ppde.third_party.hsu import data_utils
+from ppde.utils import mut_distance
 
 
 class SimulatedAnnealing(BaseSampler):

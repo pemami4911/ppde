@@ -1,9 +1,9 @@
 import argparse
 import os
 import numpy as np
-from src.metrics import proteins_transformer_score
 import glob
 import torch
+from ppde.metrics import proteins_transformer_score
 
 general_args = argparse.ArgumentParser()
 general_args.add_argument('--data_dir', type=str, default='/gpfs/alpine/bie108/proj-shared/pppo')

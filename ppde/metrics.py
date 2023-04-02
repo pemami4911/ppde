@@ -4,9 +4,9 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import torch
-from src.nets import PottsModel
-from src.utils import load_MSA
-from src.third_party.hsu import data_utils
+from ppde.nets import PottsModel
+from ppde.utils import load_MSA
+from ppde.third_party.hsu import data_utils
 from esm_one_hot import pretrained
 from tqdm import trange
 
@@ -103,6 +103,21 @@ def n_hops(population, wt):
         nhops += [diff.sum()]
     return torch.mean(torch.stack(nhops)), torch.std(torch.stack(nhops))
 
+def score_diversity(population, autoencoder):
+    """Compute average Euclidean distance between i and all pairs j
+    
+    population is [K, 1, 28, 28]
+    """
+    with torch.no_grad():
+        # encode --> [K,D]
+        K = population.size(0)
+        population = population.view(K,-1)
+        embeddings = autoencoder.encode(population).mean
+        D = embeddings.size(1)
+        distance = torch.norm( embeddings.view(K,1,D) - embeddings.view(1,K,D), 2, 2)  # [K,K]
+        avg_distance = torch.sum(distance) / (K**2 - K)
+        return avg_distance
+    
 
 def mnist_scores_to_csv(pred_scores, oracle_scores, method, args):
     pred_score_quantiles = np.quantile(pred_scores, [0.5, 0.6, 0.7, 0.8, 0.9], axis=1)  # [num_steps, 5]
