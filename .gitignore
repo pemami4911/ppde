@@ -1,1 +1,6 @@
-dev/
+ppde/__pycache__/
+ppde/*/__pycache__/
+ppde/*/*/__pycache__
+TODO.md
+results/
+poetry.lock

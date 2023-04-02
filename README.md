@@ -16,15 +16,44 @@ Create the conda env with necessary dependencies:
 conda env create -f environment.yml
 ```
 
-install ESM2 with one-hot encoded proteins:
+Activate the environment:
 
 ```bash
-git clone https://github.com/pemami4911/esm_one_hot
-cd esm_one_hot/
-pip install -e .
+conda activate ppde
 ```
 
-## Sampler implementation key files
+Install the package:
+
+```bash
+poetry install
+```
+
+## Run MNIST samplers
+
+Simulated annealing sampler
+```
+python3 scripts/mnist_sum.py --seed 1 --sampler simulated_annealing --prior ebm --energy_function joint --simulated_annealing_temp 10 --muts_per_seq_param 5 --energy_lamda 30 --n_iters 20000 --log_every 50 --wild_type 1
+```
+
+MALA-approx sampler
+```
+python3 scripts/mnist_sum.py --seed 1 --sampler MALA-approx --prior ebm --energy_function joint --diffusion_step_size 0.1 --diffusion_relaxation_tau 0.9 --energy_lamda 5 --n_iters 20000 --log_every 50 --wild_type 1
+```
+
+CMA-ES sampler
+```
+python3 scripts/mnist_sum.py --seed 1 --sampler CMAES --prior ebm --energy_function joint --energy_lamda 20 --cmaes_initial_variance 0.1 --n_iters 20000 --log_every 50 --wild_type 1
+```
+
+PPDE sampler
+```
+python3 scripts/mnist_sum.py --seed 1 --sampler PPDE --prior ebm --energy_function joint --ppde_pas_length 10 --energy_lamda 10 --n_iters 20000 --log_every 50 --wild_type 1
+```            
+
+## Protein sampler implementation files
+
+Protein sampling experiment scripts are under construction. 
+For now, check out the relevant source files here: 
 
 - product of experts: `./src/energy.py`
 - PPDE MCMC sampler: `./src/protein_samplers/ppde.py`

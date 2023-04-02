@@ -1,0 +1,11 @@
+[tool.poetry]
+name = "ppde"
+version = "0.1.0"
+description = "Fast and composable gradient-based MCMC sampling for directed evolution of proteins."
+authors = ["Patrick Emami <pemami@nrel.gov>"]
+license = "MIT"
+readme = "README.md"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
