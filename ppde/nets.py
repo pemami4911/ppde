@@ -37,23 +37,23 @@ class MNISTRegressionNet(nn.Module):
         return self.out((h1+h2).squeeze()).squeeze()
     
     
-class MNISTLatentMLP(nn.Module):
-    def __init__(self, z=16, nh=32):
-        super().__init__()
-        self.net = nn.Sequential(
-            nn.Linear(z, nh),
-            Swish(),
-            nn.Linear(nh, nh),
-            Swish(),
-            nn.Linear(nh, nh),
-            Swish()
-        )
-        self.out = nn.Linear(nh, 1)
+# class MNISTLatentMLP(nn.Module):
+#     def __init__(self, z=16, nh=32):
+#         super().__init__()
+#         self.net = nn.Sequential(
+#             nn.Linear(z, nh),
+#             Swish(),
+#             nn.Linear(nh, nh),
+#             Swish(),
+#             nn.Linear(nh, nh),
+#             Swish()
+#         )
+#         self.out = nn.Linear(nh, 1)
 
-    def forward(self, input1, input2):
-        h1 = self.net(input1)
-        h2 = self.net(input2)
-        return self.out((h1+h2).squeeze()).squeeze()
+#     def forward(self, input1, input2):
+#         h1 = self.net(input1)
+#         h2 = self.net(input2)
+#         return self.out((h1+h2).squeeze()).squeeze()
        
 
 class DAE(nn.Module):
@@ -170,7 +170,7 @@ class DAE(nn.Module):
 
 
 class Transformer(nn.Module):
-    def __init__(self, model_name, dataset_name):
+    def __init__(self, model_name, protein):
         super().__init__()
         print('loading transformer weights from checkpoint...')
         if model_name == 'transformer-S':
@@ -182,7 +182,7 @@ class Transformer(nn.Module):
 
         self.batch_converter = self.esm2_alphabet.get_batch_converter()
         
-        self.wtseqs, wtids = io_utils.read_fasta(os.path.join(dataset_name,
+        self.wtseqs, wtids = io_utils.read_fasta(os.path.join(protein,
             'wt.fasta'), return_ids=True)
         
         _, _, self.wt_onehot = self.batch_converter([('wt', self.wtseqs[0])])
@@ -259,9 +259,9 @@ class Transformer(nn.Module):
 #########################
 
 class PottsModel(nn.Module):
-    def __init__(self, dataset_name):
+    def __init__(self, protein):
         super().__init__()
-        potts_params = pkl.load(open(os.path.join(dataset_name, 'potts.pkl'), 'rb'))
+        potts_params = pkl.load(open(os.path.join(protein, 'potts.pkl'), 'rb'))
         self.J = nn.Parameter(torch.from_numpy(potts_params['J_ij']).float(), requires_grad=True)
         self.bias = nn.Parameter(torch.from_numpy(potts_params['h_i']).float(), requires_grad=True)
         self.index_list = potts_params['index_list']
@@ -269,7 +269,7 @@ class PottsModel(nn.Module):
         self.seq_len = self.index_list.shape[0]
         self.n_tokens = 20
         self.data_dim = self.seq_len * self.n_tokens
-        self.wtseqs, wtids = io_utils.read_fasta(os.path.join(dataset_name,
+        self.wtseqs, wtids = io_utils.read_fasta(os.path.join(protein,
             'wt.fasta'), return_ids=True)
         if '/' in wtids[0]:
             self.offset = int(wtids[0].split('/')[-1].split('-')[0])
@@ -317,10 +317,10 @@ class PottsModel(nn.Module):
 
 
 class PottsTransformer(nn.Module):
-    def __init__(self, dataset_name):
+    def __init__(self, protein):
         super().__init__()
-        self.potts = PottsModel(dataset_name)
-        self.transformer = Transformer('transformer-M', dataset_name)
+        self.potts = PottsModel(protein)
+        self.transformer = Transformer('transformer-M', protein)
 
     def preprocess_onehot(self, x):
         return (self.potts.preprocess_onehot(x), self.transformer.preprocess_onehot(x))
@@ -330,9 +330,9 @@ class PottsTransformer(nn.Module):
 
 
 class AugmentedLinearRegression(nn.Module):
-    def __init__(self, dataset_name):
+    def __init__(self, protein):
         super().__init__()
-        self.potts = PottsModel(dataset_name)
+        self.potts = PottsModel(protein)
         self.potts.eval()
         self.coef_ = nn.ParameterList()
         self.intercept_ = nn.ParameterList()
@@ -340,7 +340,7 @@ class AugmentedLinearRegression(nn.Module):
         
         for seed in range(20):
             linear_params = pkl.load(open(
-                os.path.join('weights', dataset_name, f'results-predictor=ev+onehot-train=-1-seed={seed}-linear.pkl'), 'rb'))
+                os.path.join(protein, f'results-predictor=ev+onehot-train=-1-seed={seed}-linear.pkl'), 'rb'))
             self.coef_ += [nn.Parameter(torch.from_numpy(linear_params['coef_']).float(), requires_grad=False)]
             self.intercept_ += [nn.Parameter(torch.FloatTensor([linear_params['intercept_']]), requires_grad=False)]
             self.reg_coef += [linear_params['reg_coef']]

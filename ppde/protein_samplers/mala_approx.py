@@ -1,5 +1,4 @@
 import torch
-import matplotlib.pyplot as plt
 import numpy as np
 from ppde.base_sampler import BaseSampler
 from ppde.third_party.hsu import data_utils

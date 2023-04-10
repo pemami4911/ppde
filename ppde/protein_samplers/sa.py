@@ -1,5 +1,4 @@
 import torch
-import copy 
 import numpy as np
 import random
 from ppde.base_sampler import BaseSampler
@@ -58,7 +57,7 @@ class SimulatedAnnealing(BaseSampler):
 
 
     def run(self, initial_population, num_steps, energy_function, min_pos, max_pos, oracle, log_every=50):
-        print(min_pos, max_pos)
+
         with torch.no_grad():
             n_chains = initial_population.size(0)
             seq_len = initial_population.size(1)
@@ -80,7 +79,6 @@ class SimulatedAnnealing(BaseSampler):
             gt_score_quantiles = np.quantile(gt_fitness.cpu().numpy(), [0.5, 0.9])
             energy_quantiles = np.quantile(state_energy.cpu().numpy(), [0.5,0.9])
 
-            # TODO: Add debug level
             print(f'[Iteration 0] energy: 50% {energy_quantiles[0]:.3f}, 90% {energy_quantiles[1]:.3f}')
             print(f'[Iteration 0] pred fitness 50% {fitness_quantiles[0]:.3f}, 90% {fitness_quantiles[1]:.3f}')
             print(f'[Iteration 0] oracle fitness 50% {gt_score_quantiles[0]:.3f}, 90% {gt_score_quantiles[1]:.3f}')

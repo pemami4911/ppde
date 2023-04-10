@@ -1,5 +1,4 @@
 import torch
-import copy 
 import numpy as np
 import random
 from ppde.base_sampler import BaseSampler
@@ -48,7 +47,7 @@ class RandomSampler(BaseSampler):
 
 
     def run(self, initial_population, num_steps, energy_function, min_pos, max_pos, oracle, log_every=50):
-        print(min_pos, max_pos)
+
         with torch.no_grad():
             n_chains = initial_population.size(0)
             seq_len = initial_population.size(1)

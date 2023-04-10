@@ -59,10 +59,10 @@ echo 'training oracle predictor for sums <= 18'
 python3 train_binary_mnist_regression.py --data_path $DATASETS_DIR --save_dir $RESULTS_DIR --model_type one-hot --sumTo 18
 
 echo 'running simulated annealing sampler...'
-python3 mnist_sum.py --seed 0 --sampler simulated_annealing --energy_function joint --simulated_annealing_temp 10 --muts_per_seq_param 5 --energy_lamda 30 --n_iters 20000 --log_every 50 --wild_type 0 --results_path $RESULTS_DIR
+python3 mnist_sum.py --seed 0 --sampler simulated_annealing --energy_function product_of_experts --simulated_annealing_temp 10 --muts_per_seq_param 5 --energy_lamda 30 --n_iters 20000 --log_every 50 --wild_type 0 --results_path $RESULTS_DIR
 
 echo 'running relaxed diffusion sampler...'
-python3 mnist_sum.py --seed 0 --sampler relaxed_diffusion --energy_function joint --diffusion_step_size 1 --diffusion_relaxation_tau 0.9 --energy_lamda 30 --n_iters 20000 --log_every 50 --wild_type 0 --results_path $RESULTS_DIR
+python3 mnist_sum.py --seed 0 --sampler relaxed_diffusion --energy_function product_of_experts --diffusion_step_size 1 --diffusion_relaxation_tau 0.9 --energy_lamda 30 --n_iters 20000 --log_every 50 --wild_type 0 --results_path $RESULTS_DIR
 
 echo 'running PPDE sampler...'
-python3 mnist_sum.py --seed 0 --sampler PPDE --energy_function joint --ppde_pas_length 10 --ppde_gwg_samples 1 --energy_lamda 10 --n_iters 20000 --log_every 50 --wild_type 0 --results_path $RESULTS_DIR
+python3 mnist_sum.py --seed 0 --sampler PPDE --energy_function product_of_experts --ppde_pas_length 10 --ppde_gwg_samples 1 --energy_lamda 10 --n_iters 20000 --log_every 50 --wild_type 0 --results_path $RESULTS_DIR

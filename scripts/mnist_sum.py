@@ -1,4 +1,3 @@
-#from types import SimpleNamespace as SN
 import torch
 import torchvision
 import argparse
@@ -6,11 +5,11 @@ import numpy as np
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+from PIL import Image
 import random 
-#from moviepy.editor import ImageSequenceClip 
 from pathlib import Path 
 
-from ppde.energy import MNISTEnergy, MNISTJointEnergy, MNISTLatentSurrogate, TestMNISTEnergy
+from ppde.energy import MNISTProductOfExperts, MNISTSupervised
 from ppde.mnist_samplers.sa import SimulatedAnnealing
 from ppde.nets import MNISTRegressionNet
 from ppde.mnist_samplers.mala_approx import MALAApprox
@@ -38,10 +37,12 @@ def make_gif(xs, method, args):
     """
     Take a sequence of MNIST images and convert to a movie
     """
-    xs = [(255. * x).astype('int32') for x in xs]        
-    gif = ImageSequenceClip(xs, fps=20)
-    gif.write_gif(args.results_path + '/' + method + '.gif', fps=20)
-
+    xs = [Image.fromarray((255 * x[:,:,0]).astype(np.uint8)).convert('P') for x in xs]
+    xs[0].save(
+        args.results_path + '/' + method + '.gif',
+        save_all=True,
+        append_images=xs[1:],
+        duration=100, loop=0)
 
 def visualize_population(population, method, args):
     grid = torchvision.utils.make_grid(population.view(-1,28,28).unsqueeze(1))
@@ -72,15 +73,12 @@ def main(args):
     args.mnist_weights = Path(args.mnist_weights)
 
     # Load energy function models
-    if args.energy_function == 'joint':
+    if args.energy_function == 'product_of_experts':
         init_mean = torch.from_numpy(np.load('./data/mnist/mnist_mean.npy')).float()
-        energy_func = MNISTJointEnergy(init_mean, args)
-    elif args.energy_function == 'fitness':
-        energy_func = MNISTEnergy(args)
-    elif args.energy_function == 'latent_fitness':
-        energy_func = MNISTLatentSurrogate(args)
-    elif args.energy_function == 'test':
-        energy_func = TestMNISTEnergy(args)
+        energy_func = MNISTProductOfExperts(init_mean, args)
+    elif args.energy_function == 'supervised':
+        energy_func = MNISTSupervised(args)
+
     energy_func = energy_func.to(args.device)
 
     # Load oracle
@@ -153,12 +151,13 @@ if __name__ == '__main__':
     general_args.add_argument('--n_iters', type=int, default=200)
     general_args.add_argument('--n_chains', type=int, default=128)
     general_args.add_argument('--energy_lamda', type=float, default=10)
-    general_args.add_argument('--energy_function', type=str, default='joint')
-    general_args.add_argument('--prior', type=str, default='ebm')
+    general_args.add_argument('--energy_function', type=str, default='product_of_experts')
+    general_args.add_argument('--unsupervised_expert', type=str, default='ebm', help='ebm or dae')
     general_args.add_argument('--log_every', type=int, default=50)
     general_args.add_argument('--sampler', type=str, default='simulated_annealing')
     general_args.add_argument('--suffix', type=str, default='')
-    general_args.add_argument('--metrics', type=str, default='gif+plots+viz+csv')
+    general_args.add_argument('--metrics', type=str, default='gif+plots+viz+csv', 
+                              help='which metrics to compute (gif, plots, viz, csv)')
 
     # sampler (simulated annealing)
     sa_args = parser.add_argument_group('simulated_annealing')

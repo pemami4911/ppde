@@ -4,3 +4,4 @@ ppde/*/*/__pycache__
 TODO.md
 results/
 poetry.lock
+checkpoints/

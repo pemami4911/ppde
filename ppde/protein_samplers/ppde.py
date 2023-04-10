@@ -1,16 +1,14 @@
 import torch
-import torch.nn as nn
-import matplotlib.pyplot as plt
 import numpy as np
 from ppde.base_sampler import BaseSampler
-import time
 from ppde.utils import mut_distance, mutation_mask
+from ppde.utils import safe_logits_to_probs
 
 
 class PPDE_PAS(BaseSampler):
     def __init__(self, args):
         super().__init__()
-        self.ppde_temp = 2  # locally balanced function g(t) = \sqrt(t)
+        self.ppde_temp = 2  # for locally balanced function g(t) = \sqrt(t)
         self.ppde_pas_length = args.ppde_pas_length    
         self.nmut_threshold = args.nmut_threshold
         if self.nmut_threshold == 0:
@@ -20,6 +18,7 @@ class PPDE_PAS(BaseSampler):
 
     def approximate_energy_change(self, score_change):
         return score_change / self.ppde_temp
+    
     
     def run(self, initial_population, num_steps, energy_function, min_pos, max_pos, oracle, log_every=50):
         """
@@ -63,7 +62,6 @@ class PPDE_PAS(BaseSampler):
         pos_mask = pos_mask.reshape(n_chains,-1)
 
         for i in range(num_steps):
-            #start_step = time.time()
             ###### sample path length for PAS
             U = torch.randint(1, 2 * self.ppde_pas_length, size=(n_chains,1))
             max_u = torch.max(U).item()
@@ -74,13 +72,7 @@ class PPDE_PAS(BaseSampler):
             traj_list = []
             forward_categoricals = []
 
-            #start = time.time()
             cur_x = cur_x.requires_grad_()
-            #current_energy, current_fitness = energy_function.get_energy(cur_x)
-            #time_forward = time.time() - start
-            #start = time.time()
-            #grad_x = torch.autograd.grad([current_energy.sum()], cur_x)[0]
-            #time_backward = time.time() - start
             current_energy, current_fitness, grad_x = energy_function.get_energy_and_grads(cur_x)
                            
             # do U intermediate steps
@@ -110,7 +102,8 @@ class PPDE_PAS(BaseSampler):
                     approx_forward_energy_change[mask] = -np.inf
                     approx_forward_energy_change[pos_mask] = -np.inf
 
-                    cd_forward = torch.distributions.one_hot_categorical.OneHotCategorical(logits=approx_forward_energy_change)
+                    cd_forward = torch.distributions.one_hot_categorical.OneHotCategorical(
+                        probs=safe_logits_to_probs(approx_forward_energy_change))
                     forward_categoricals += [cd_forward]
                     changes_all = cd_forward.sample((1,)).squeeze(0)
                     onehot_Idx += [changes_all]
@@ -137,7 +130,8 @@ class PPDE_PAS(BaseSampler):
                 reverse_score_change = reverse_score_change.reshape(n_chains, max_u, -1) / 2.0
                 log_ratio = 0
                 for id in range(len(onehot_Idx)):
-                    cd_reverse = torch.distributions.one_hot_categorical.OneHotCategorical(logits=reverse_score_change[:,id])
+                    cd_reverse = torch.distributions.one_hot_categorical.OneHotCategorical(
+                        probs=safe_logits_to_probs(reverse_score_change[:,id]))
                     log_ratio += u_mask[:,id] * (cd_reverse.log_prob(onehot_Idx[id]) - forward_categoricals[id].log_prob(onehot_Idx[id]))
                 
                 #log_acc = log_backwd - log_fwd
