@@ -89,16 +89,6 @@ python3 scripts/directed_evolution.py --seed 1 --sampler PPDE --unsupervised_exp
 
 By default, the script will save metrics in `.npy` format to `results/proteins/$PROTEIN`.
 
-## Protein sampler implementation files
-
-Protein sampling experiment scripts are under construction. 
-For now, check out the relevant source files here: 
-
-- product of experts: `./src/energy.py`
-- PPDE MCMC sampler: `./src/protein_samplers/ppde.py`
-- models: `./src/nets.py`
-- launch file: `protein_optimization.py`
-
 ## Cite the work
 
 ```
