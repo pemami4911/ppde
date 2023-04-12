@@ -1,6 +1,5 @@
 #!/bin/bash
 
-# TODO: Fix addressing of trained models in samplers
 CURRENT_DIR=`pwd`
 DATASETS_DIR="$CURRENT_DIR/data"
 RESULTS_DIR="$CURRENT_DIR/results/mnist"
@@ -23,7 +22,7 @@ mv binarized_mnist_test.amat $DATASETS_DIR/MNIST_static/
 
 echo 'training binary mnist EBM...'
 
-cd "$CURRENT_DIR/third_party"
+cd "$CURRENT_DIR/ppde/third_party"
 git clone git@github.com:wgrathwohl/GWG_release.git
 cd GWG_release
 
@@ -34,9 +33,9 @@ python3 pcd_ebm_ema.py --save_dir $RESULTS_DIR \
     --eval_every 5000 --eval_sampling_steps 10000
 
 echo 'training denoising autoencoder...'
-# TODO: update this to use GWG's vamp_utils ?
-cd "$CURRENT_DIR/experiments/mnist/"
-python3 train_binary_mnist_dae.py --save_dir $RESULTS_DIR
+
+#cd "$CURRENT_DIR/experiments/mnist/"
+python3 scripts/train_binary_mnist_dae.py --save_dir $RESULTS_DIR
 
 # Train sum regression models
 # N.b. there are no labels accompanying BinaryMNIST, so we have 
@@ -57,12 +56,3 @@ done
 
 echo 'training oracle predictor for sums <= 18'
 python3 train_binary_mnist_regression.py --data_path $DATASETS_DIR --save_dir $RESULTS_DIR --model_type one-hot --sumTo 18
-
-echo 'running simulated annealing sampler...'
-python3 mnist_sum.py --seed 0 --sampler simulated_annealing --energy_function product_of_experts --simulated_annealing_temp 10 --muts_per_seq_param 5 --energy_lamda 30 --n_iters 20000 --log_every 50 --wild_type 0 --results_path $RESULTS_DIR
-
-echo 'running relaxed diffusion sampler...'
-python3 mnist_sum.py --seed 0 --sampler relaxed_diffusion --energy_function product_of_experts --diffusion_step_size 1 --diffusion_relaxation_tau 0.9 --energy_lamda 30 --n_iters 20000 --log_every 50 --wild_type 0 --results_path $RESULTS_DIR
-
-echo 'running PPDE sampler...'
-python3 mnist_sum.py --seed 0 --sampler PPDE --energy_function product_of_experts --ppde_pas_length 10 --ppde_gwg_samples 1 --energy_lamda 10 --n_iters 20000 --log_every 50 --wild_type 0 --results_path $RESULTS_DIR

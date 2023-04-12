@@ -50,6 +50,12 @@ python3 scripts/mnist_sum.py --seed 1 --sampler PPDE --prior ebm --energy_functi
 
 By default, the script will save metrics and visualizations to `results/mnist_sum/`.
 
+### Training MNIST models
+
+See `./scripts/train_mnist.sh` for instructions on training the MNIST models.
+Script for training the Denoising Autoencoder (DAE) model: `./scripts/train_binary_mnist_dae.py`.
+Script for training the supervised experts: `./scripts/train_binary_mnist_regression.py`.
+
 ## Run Protein experiments
 
 | protein | unsupervised expert | $\lambda$ | 
