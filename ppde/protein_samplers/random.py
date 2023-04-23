@@ -83,11 +83,7 @@ class RandomSampler(BaseSampler):
                 x_proposal = torch.cat(proposal_seqs)           
                 proposal_energy, proposal_fitness = energy_function.get_energy(x_proposal)
 
-                # Make sequence acceptance/rejection decisions
-                #aprob = self.acceptance_prob(proposal_energy, current_energy)                
-                #aprob = (aprob > torch.rand_like(aprob)).float()
-                #aprob = aprob.unsqueeze(1).unsqueeze(2)
-                x_new = x_proposal #* aprob + x * (1. - aprob)
+                x_new = x_proposal 
                 
                 # resets
                 state_seqs = torch.chunk(x.clone(), n_chains)

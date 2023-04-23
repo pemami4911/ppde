@@ -72,6 +72,7 @@ class PPDE_PAS(BaseSampler):
             traj_list = []
             forward_categoricals = []
 
+            x = cur_x.clone()
             cur_x = cur_x.requires_grad_()
             current_energy, current_fitness, grad_x = energy_function.get_energy_and_grads(cur_x)
                            
@@ -139,9 +140,8 @@ class PPDE_PAS(BaseSampler):
                 log_acc = m_term + log_ratio
                 
                 accepted = (log_acc.exp() >= torch.rand_like(log_acc)).float().view(-1, *([1] * x_rank))
-                new_x = y * accepted + (1.0 - accepted) * x
+                cur_x = y * accepted + (1.0 - accepted) * x
                 
-            cur_x = new_x
             new_energy = proposed_energy * accepted.squeeze() + current_energy * (1. - accepted.squeeze())
             random_traj += [cur_x[random_idx].detach().cpu().numpy()]
             fitness = proposed_fitness * accepted.squeeze() + current_fitness * (1. - accepted.squeeze())
