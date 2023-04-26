@@ -28,22 +28,22 @@ poetry install
 
 Simulated annealing sampler
 ```
-python3 scripts/mnist_sum.py --seed 1 --sampler simulated_annealing --prior ebm --energy_function product_of_experts --simulated_annealing_temp 10 --muts_per_seq_param 5 --energy_lamda 30 --n_iters 20000 --log_every 50 --wild_type 1
+python3 scripts/mnist_sum.py --seed 1 --sampler simulated_annealing --unsupervised_expert ebm --energy_function product_of_experts --simulated_annealing_temp 10 --muts_per_seq_param 5 --energy_lamda 30 --n_iters 20000 --log_every 50 --wild_type 1
 ```
 
 MALA-approx sampler
 ```
-python3 scripts/mnist_sum.py --seed 1 --sampler MALA-approx --prior ebm --energy_function product_of_experts --diffusion_step_size 0.1 --diffusion_relaxation_tau 0.9 --energy_lamda 5 --n_iters 20000 --log_every 50 --wild_type 1
+python3 scripts/mnist_sum.py --seed 1 --sampler MALA-approx --unsupervised_expert ebm --energy_function product_of_experts --diffusion_step_size 0.1 --diffusion_relaxation_tau 0.9 --energy_lamda 5 --n_iters 20000 --log_every 50 --wild_type 1
 ```
 
 CMA-ES sampler
 ```
-python3 scripts/mnist_sum.py --seed 1 --sampler CMAES --prior ebm --energy_function product_of_experts --energy_lamda 20 --cmaes_initial_variance 0.1 --n_iters 20000 --log_every 50 --wild_type 1
+python3 scripts/mnist_sum.py --seed 1 --sampler CMAES --unsupervised_expert ebm --energy_function product_of_experts --energy_lamda 20 --cmaes_initial_variance 0.1 --n_iters 20000 --log_every 50 --wild_type 1
 ```
 
 PPDE sampler
 ```
-python3 scripts/mnist_sum.py --seed 1 --sampler PPDE --prior ebm --energy_function product_of_experts --ppde_pas_length 10 --energy_lamda 10 --n_iters 20000 --log_every 50 --wild_type 1
+python3 scripts/mnist_sum.py --seed 1 --sampler PPDE --unsupervised_expert ebm --energy_function product_of_experts --ppde_pas_length 10 --energy_lamda 10 --n_iters 20000 --log_every 50 --wild_type 1
 ``` 
 
 By default, the script will save metrics and visualizations to `results/mnist_sum/`.
