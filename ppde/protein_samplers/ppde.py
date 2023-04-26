@@ -11,6 +11,7 @@ class PPDE_PAS(BaseSampler):
         self.ppde_temp = 2  # for locally balanced function g(t) = \sqrt(t)
         self.ppde_pas_length = args.ppde_pas_length    
         self.nmut_threshold = args.nmut_threshold
+        self.paper_results = args.paper_results
         if self.nmut_threshold == 0:
             # big num
             self.nmut_threshold = np.iinfo(np.int32).max
@@ -28,7 +29,7 @@ class PPDE_PAS(BaseSampler):
 
         """
         print(min_pos, max_pos)
-
+        wt = initial_population[0].unsqueeze(0) # [1,seq_len,vocab_size]
         n_chains = initial_population.size(0)
         seq_len = initial_population.size(1)
         x = initial_population.clone()
@@ -72,7 +73,8 @@ class PPDE_PAS(BaseSampler):
             traj_list = []
             forward_categoricals = []
 
-            x = cur_x.clone()
+            if not self.paper_results:
+                x = cur_x.clone()
             cur_x = cur_x.requires_grad_()
             current_energy, current_fitness, grad_x = energy_function.get_energy_and_grads(cur_x)
                            
@@ -85,20 +87,18 @@ class PPDE_PAS(BaseSampler):
                     # if dist == threshold, only valid next mutations 
                     # are substitutions that reduce the mut_distance.
                     # set approx_forward_energy_change to -inf everywhere else. 
-                    mask_flag = (dist == self.nmut_threshold).bool()
+                    mask_flag = (dist >= self.nmut_threshold).bool()
                     mask_flag = mask_flag.reshape(n_chains)
                     mask = mutation_mask(cur_x, energy_function.wt_onehot)
                     mask = mask.reshape(n_chains,-1)
-
-                    # mask out min/max positions
+                    # Apply mask to constrain proposals within edit distance of WT
+                    mask[~mask_flag] = False
                     
                     # Compute PIP
                     score_change = grad_x - (grad_x * cur_x).sum(-1).unsqueeze(-1)
                     traj_list += [cur_x]
                     approx_forward_energy_change = score_change.reshape(n_chains,-1) / self.ppde_temp
                     
-                    # Apply mask to constrain proposals within edit distance of WT
-                    mask[~mask_flag] = False
                     
                     approx_forward_energy_change[mask] = -np.inf
                     approx_forward_energy_change[pos_mask] = -np.inf
@@ -113,13 +113,9 @@ class PPDE_PAS(BaseSampler):
                     new_x = cur_x * (1.0 - row_select) + changes_all
                     cur_u_mask = u_mask[:, step].unsqueeze(-1).unsqueeze(-1)
                     cur_x = cur_u_mask * new_x + (1 - cur_u_mask) * cur_x
-
-                    
                 y = cur_x
             # last step
             y = y.requires_grad_()
-            #proposed_energy, proposed_fitness = energy_function.get_energy(y)
-            #grad_y = torch.autograd.grad(proposed_energy.sum(), y)[0].detach()
             proposed_energy, proposed_fitness, grad_y = energy_function.get_energy_and_grads(y)
             grad_y = grad_y.detach()
 
@@ -149,6 +145,13 @@ class PPDE_PAS(BaseSampler):
             fitness_history += [fitness.detach()]
             all_x += [cur_x.detach().cpu().numpy()]
 
+            if not self.paper_results:
+                dist = mut_distance(cur_x, energy_function.wt_onehot) 
+                mask_flag = (dist >= self.nmut_threshold).bool()
+                mask_flag = mask_flag.reshape(n_chains)
+                # reset cur_x to wt if it is out of edit distance threshold
+                cur_x[mask_flag] = energy_function.wt_onehot[0]
+            
             if i > 0 and (i+1) % log_every == 0:
                 gt_fitness = oracle(cur_x).detach()
 
@@ -156,10 +159,13 @@ class PPDE_PAS(BaseSampler):
                 gt_score_quantiles = np.quantile(gt_fitness.cpu().numpy(), [0.5, 0.9])
                 energy_quantiles = np.quantile(energy_history[-1].cpu().numpy(), [0.5,0.9])
 
+                dist = mut_distance(cur_x, energy_function.wt_onehot)
+
                 print(f'[Iteration {i}] energy: 50% {energy_quantiles[0]:.3f}, 90% {energy_quantiles[1]:.3f}', flush=True)
                 print(f'[Iteration {i}] pred 50% {fitness_quantiles[0]:.3f}, 90% {fitness_quantiles[1]:.3f}', flush=True)
                 print(f'[Iteration {i}] oracle 50% {gt_score_quantiles[0]:.3f}, 90% {gt_score_quantiles[1]:.3f}', flush=True)
                 print(f'   # accepted = {torch.sum(accepted)}')
+                print(f'   # dist = {torch.mean(dist)}')
                 #print(f'[Iteration {i}] time frwd: {time_forward:.3f} s, time bckwd: {time_backward:.3f} s, time step: {end_step:.3f} s')
                 print('', flush=True)
             

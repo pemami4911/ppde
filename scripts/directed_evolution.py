@@ -130,7 +130,8 @@ if __name__ == '__main__':
     general_args.add_argument('--n_iters', type=int, default=10000)
     general_args.add_argument('--n_chains', type=int, default=128)
     general_args.add_argument('--energy_lamda', type=float, default=5)
-    general_args.add_argument('--energy_function', type=str, default='product_of_experts')
+    general_args.add_argument('--energy_function', type=str, default='product_of_experts',
+                                help='product_of_experts, supervised')
     general_args.add_argument('--unsupervised_expert', type=str, default='potts',
                                 help='potts, transformer-S, transformer-M, transformer-L, '
                                 ' potts+transformer')    
@@ -141,6 +142,8 @@ if __name__ == '__main__':
     general_args.add_argument('--disable_MSA_transformer_scoring', action='store_true',
                                help='Disable MSATransformer scoring. Useful for debugging '
                                'or if you don\'t have a GPU. Weights are a ~1.3 GB download.')
+    general_args.add_argument('--paper_results', action='store_true', default=False,
+                               help='Reproduce paper results by resetting Markov chain instead of rejecting proposal')
     
     # sampler (simulated annealing)
     sa_args = parser.add_argument_group('simulated_annealing')

@@ -175,7 +175,7 @@ class Transformer(nn.Module):
         print('loading transformer weights from checkpoint...')
         if model_name == 'transformer-S':
             self.esm2, self.esm2_alphabet = pretrained.esm2_t12_35M_UR50D()
-        elif model_name == 'transformer-M':
+        elif model_name == 'transformer-M' or model_name == 'transformer':
             self.esm2, self.esm2_alphabet = pretrained.esm2_t30_150M_UR50D()
         elif model_name == 'transformer-L':
             self.esm2, self.esm2_alphabet = pretrained.esm2_t33_650M_UR50D()
@@ -204,24 +204,7 @@ class Transformer(nn.Module):
             if not (potts_int_to_aa[k] == 'start' or  potts_int_to_aa[k] == 'stop'):
                 perm[k, esm_aa_to_int[potts_int_to_aa[k]]] = 1
         return perm
-    
-    # def corrupt(self, x):
-    #     """
-    #     Apply random <masking> to the one-hot protein then apply token dropout (ESM2 specific)
-    #     """
-    #     b, l, v = x.shape
-    #     mask = torch.bernoulli( 0.15 * 0.8 * torch.ones(b,l).to(x.device) )
-    #     x[ (mask==1).bool() ] = 0  # zero out old AA
-    #     x[ (mask==1).bool() , self.esm2.mask_idx] = 1  # set the mask idx to 1
-    #     return x
 
-    # def encode(self, x):
-    #     return self.esm2(x)['representations']
-
-    # def decode(self, x):
-    #     """
-    #     x is a [N,]
-    #     """
     def translate_potts_to_esm(self, x):
         '''
         x is an N*L*q1 tensor of one-hot encodings encoded using the Potts encoding

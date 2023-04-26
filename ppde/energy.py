@@ -74,17 +74,18 @@ class ProteinProductOfExperts(torch.nn.Module):
         self.lamda = args.energy_lamda
         self.unsupervised_expert_type = args.unsupervised_expert
         dataset = path.join(args.protein_weights, args.protein)
-        self.minibatch_size = 1 if args.unsupervised_expert == 'transformer-L' else min(args.n_chains,16)
+        self.minibatch_size = 8 if args.unsupervised_expert == 'transformer-L' else min(args.n_chains,64)
+        #self.minibatch_size = args.n_chains
 
         if args.unsupervised_expert == 'potts':
             self.unsupervised_expert = PottsModel(dataset)
             self.unsupervised_expert.eval()
-        elif 'transformer-' in args.unsupervised_expert:
-            self.unsupervised_expert_type = 'transformer'
-            self.unsupervised_expert = Transformer(args.unsupervised_expert, dataset)
-            self.unsupervised_expert.eval()
         elif args.unsupervised_expert == 'potts+transformer':
             self.unsupervised_expert = PottsTransformer(dataset)
+            self.unsupervised_expert.eval()
+        elif 'transformer' in args.unsupervised_expert:
+            self.unsupervised_expert_type = 'transformer'
+            self.unsupervised_expert = Transformer(args.unsupervised_expert, dataset)
             self.unsupervised_expert.eval()
 
         wt = io_utils.read_fasta(path.join(dataset,'wt.fasta'), return_ids=False)
