@@ -56,7 +56,9 @@ Script for training the supervised experts: `./scripts/train_binary_mnist_regres
 
 ## Run Protein experiments
 
-**UPDATE:** We found that the PPDE protein sampler was unintentially ran with a "soft" maximum number of mutations from wild type, i.e., the sampler would reset the Markov chain to the wild type whenever a mutation proposal was rejected. We have corrected the accept/reject step code (L77 in ppde/protein_samplers/ppde.py) and implemented a proper "hard" maximum number of mutations constraint. See [this PDF](data/PPDE_Updated_Results.pdf) for updated versions of Table 1 and Table 2 with results from running PPDE with a "hard" maximum of 10 mutations (this can be set with argument `--nmut_threshold`). If aiming to replicate the PPDE protein experiments results from the paper, set the flag `--paper_results` when running to use the "soft" maximum number of mutations constraint. This flag only affects the PPDE protein sampler (not the baselines or the MNIST experiments).
+*UPDATE: We discovered that the PPDE protein sampler was unintentially running with a "soft" maximum number of mutations from wild type---the sampler would reset the Markov chain to the wild type whenever a mutation proposal was rejected. We have corrected the accept/reject step code (L77 in ppde/protein_samplers/ppde.py) and implemented a proper "hard" maximum number of mutations constraint. This is easily implemented in our sampler by setting the logits of proposed mutations that would result in an edit distance from the wild type sequence greater than a threshold.*
+
+See [this PDF](data/PPDE_Updated_Results.pdf) for updated versions of Table 1 and Table 2 with results for PPDE with a "hard" maximum of 10 mutations from wild type (this can be set with argument `--nmut_threshold` in our code). If aiming to replicate the PPDE protein experiments results from the paper, set the flag `--paper_results` when running to use the "soft" maximum number of mutations constraint. These flags only affect the PPDE protein sampler (not the baselines or the MNIST experiments).
 
 | protein | unsupervised expert | $\lambda$ | 
 | --- | --- | --- |
