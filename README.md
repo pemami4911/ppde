@@ -1,8 +1,10 @@
 # Plug & Play Directed Evolution
 
-A fast MCMC-based sampler for mixing and matching unsupervised and supervised sequence models for machine-learning-based directed evolution of proteins.
+Official implementation of Plug & Play Directed Evolution (PPDE). A fast MCMC-based sampler for mixing and matching unsupervised and supervised sequence models for machine-learning-based directed evolution of proteins.
 
 [[DOI](https://doi.org/10.1088/2632-2153/accacd)] [[arxiv link](https://arxiv.org/abs/2212.09925)]
+
+**Please check out https://github.com/NREL/EvoProtGrad for an easy-to-use library that implements PPDE, is installable via pip, and supports 🤗 HuggingFace protein language models.**
 
 ## Install
 
